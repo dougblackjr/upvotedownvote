@@ -161,4 +161,16 @@ class Upvotedownvote {
 
     }
 
+    // We need this for our javascript
+    public function get_upvote_url()
+    {
+
+        $actionId = ee()->functions->fetch_action_id(__CLASS__, 'cast_vote');
+
+        $siteUrl = ee()->functions->fetch_site_index();
+
+        return "{$siteUrl}?ACT={$actionId}";
+
+    }
+
 }
