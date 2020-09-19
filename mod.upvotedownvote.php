@@ -1,5 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+use EllisLab\ExpressionEngine\Library\Data\Collection;
+
 class Upvotedownvote {
 
 	// 5. Access our model in the module
@@ -135,55 +137,35 @@ class Upvotedownvote {
 							->first();
 
 		// This gets the actual votes
-		// $votes = ee('Model')->get('upvotedownvote:Vote')
-		// 					->filter('ee:ChannelEntry.channel_id', $channelId)
-		// 					->first();
-
-		// But lets get the entries instead
-		$entries = ee('Model')
-					->get('ChannelEntry')
-					// To order or filter on a relationship, you have to eager load it
-					->with('upvotedownvote:Votes')
-					->filter('channel_id', $channel->channel_id)
-					->order('upvotedownvote:Votes.upvotes', 'DESC')
-					->limit($limit)
+		$votes = ee('Model')
+					->get('upvotedownvote:Vote')
+					->with('ChannelEntry')
+					->filter('ChannelEntry.channel_id', $channel->channel_id)
+					->order('upvotes', 'DESC')
 					->all();
 
-		// Then we'll parse the variables
+		// We can get the entries too
+		// $entries = ee('Model')
+		// 			->get('ChannelEntry')
+		// 			// To order or filter on a relationship, you have to eager load it
+		// 			->with('upvotedownvote:Votes')
+		// 			->filter('channel_id', $channel->channel_id)
+		// 			->order('upvotedownvote:Votes.upvotes', 'DESC')
+		// 			->limit($limit)
+		// 			->all();
 		$output = [];
 
-		foreach ($entries as $entry) {
-
-			// If our entry doesn't have votes with it, we'll create and attach
-			if( ! $entry->Votes ) {
-
-				$votes = ee('Model')->make(
-					// Our model name
-					'upvotedownvote:Vote',
-					// our default values
-					[
-						'entry_id'  => $entry->entry_id,
-						'upvotes'   => 0,
-						'downvotes' => 0,
-					]
-				);
-
-				$votes->save();
-
-				$entry->Votes = $votes;
-				$entry->save();
-
-			}
+		foreach ($votes as $vote) {
 
 			// Then we'll parse to for the templates
 			$output[] = [
-				'entry_id'      => $entry->entry_id,
-				'title'         => $entry->title,
-				'url_title'     => $entry->urltitle,
-				'entry_date'    => $entry->entry_date,
-				'author'        => $entry->Author->username,
-				'upvotes'       => $entry->Votes->upvotes,
-				'downvotes'     => $entry->Votes->downvotes,
+				'entry_id'      => $vote->ChannelEntry->entry_id,
+				'title'         => $vote->ChannelEntry->title,
+				'url_title'     => $vote->ChannelEntry->urltitle,
+				'entry_date'    => $vote->ChannelEntry->entry_date,
+				'upvotes'       => $vote->upvotes,
+				'downvotes'     => $vote->downvotes,
+				'percentage'    => ($vote->upvotes + $vote->downvotes == 0) ? 0 : $vote->upvotes / ($vote->upvotes + $vote->downvotes),
 			];
 
 		}

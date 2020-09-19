@@ -34,7 +34,7 @@ class Vote extends Model {
             'from_key'  => 'entry_id',
             'to_key'    => 'entry_id',
             'inverse' => [
-                'name' => 'Votes',
+                'name' => 'Vote',
                 'type' => 'BelongsTo'
             ]
         ],
